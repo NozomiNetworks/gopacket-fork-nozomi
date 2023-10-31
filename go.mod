@@ -1,4 +1,4 @@
-module github.com/google/gopacket
+module github.com/NozomiNetworks/gopacket-fork-nozomi
 
 go 1.21.0
 
