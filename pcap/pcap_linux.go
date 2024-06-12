@@ -12,13 +12,12 @@ package pcap
 
 import (
 	"errors"
+	"github.com/NozomiNetworks/gopacket-fork-nozomi"
 	"os"
 	"sync"
 	"syscall"
 	"time"
 	"unsafe"
-
-	"github.com/NozomiNetworks/gopacket-fork-nozomi"
 
 	"github.com/NozomiNetworks/gopacket-fork-nozomi/layers"
 )
@@ -107,7 +106,7 @@ int pcap_tstamp_type_name_to_val(const char* t) {
 
 // Windows, Macs, and Linux all use different time types.  Joy.
 #ifdef __APPLE__
-#define gopacket_time_secs_t __darwin_time_t
+#define gopacket_time_secs_t int64_t
 #define gopacket_time_usecs_t __darwin_suseconds_t
 #elif __ANDROID__
 #define gopacket_time_secs_t __kernel_time_t
@@ -338,18 +337,6 @@ func pcapLookupnet(device string) (netp, maskp uint32, err error) {
 		// doesn't have an IPv4.
 	}
 	return
-}
-
-func (b *BPF) pcapOfflineFilter(ci gopacket.CaptureInfo, data []byte) bool {
-	hdr := (*C.struct_pcap_pkthdr)(&b.hdr)
-	hdr.ts.tv_sec = C.int64_t(C.gopacket_time_secs_t(ci.Timestamp.Unix()))
-	hdr.ts.tv_usec = C.int64_t(C.gopacket_time_usecs_t(ci.Timestamp.Nanosecond() / 1000))
-	hdr.caplen = C.bpf_u_int32(len(data)) // Trust actual length over ci.Length.
-	hdr.len = C.bpf_u_int32(ci.Length)
-	dataptr := (*C.u_char)(unsafe.Pointer(&data[0]))
-	return C.pcap_offline_filter_escaping((*C.struct_bpf_program)(&b.bpf.bpf),
-		C.uintptr_t(uintptr(unsafe.Pointer(hdr))),
-		C.uintptr_t(uintptr(unsafe.Pointer(dataptr)))) != 0
 }
 
 func (p *Handle) pcapSetfilter(bpf pcapBpfProgram) error {
@@ -705,4 +692,16 @@ func openOfflineFile(file *os.File) (handle *Handle, err error) {
 		return nil, errors.New(C.GoString(buf))
 	}
 	return &Handle{cptr: cptr}, nil
+}
+
+func (b *BPF) pcapOfflineFilter(ci gopacket.CaptureInfo, data []byte) bool {
+	hdr := (*C.struct_pcap_pkthdr)(&b.hdr)
+	hdr.ts.tv_sec = C.int32_t(C.gopacket_time_secs_t(ci.Timestamp.Unix()))
+	hdr.ts.tv_usec = C.int32_t(C.gopacket_time_usecs_t(ci.Timestamp.Nanosecond() / 1000))
+	hdr.caplen = C.bpf_u_int32(len(data)) // Trust actual length over ci.Length.
+	hdr.len = C.bpf_u_int32(ci.Length)
+	dataptr := (*C.u_char)(unsafe.Pointer(&data[0]))
+	return C.pcap_offline_filter_escaping((*C.struct_bpf_program)(&b.bpf.bpf),
+		C.uintptr_t(uintptr(unsafe.Pointer(hdr))),
+		C.uintptr_t(uintptr(unsafe.Pointer(dataptr)))) != 0
 }
