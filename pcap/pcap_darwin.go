@@ -106,7 +106,7 @@ int pcap_tstamp_type_name_to_val(const char* t) {
 
 // Windows, Macs, and Linux all use different time types.  Joy.
 #ifdef __APPLE__
-#define gopacket_time_secs_t int64_t
+#define gopacket_time_secs_t __darwin_time_t
 #define gopacket_time_usecs_t __darwin_suseconds_t
 #elif __ANDROID__
 #define gopacket_time_secs_t __kernel_time_t
@@ -696,7 +696,7 @@ func openOfflineFile(file *os.File) (handle *Handle, err error) {
 
 func (b *BPF) pcapOfflineFilter(ci gopacket.CaptureInfo, data []byte) bool {
 	hdr := (*C.struct_pcap_pkthdr)(&b.hdr)
-	hdr.ts.tv_sec = C.long(C.gopacket_time_secs_t(ci.Timestamp.Unix()))
+	hdr.ts.tv_sec = C.gopacket_time_secs_t(ci.Timestamp.Unix())
 	hdr.ts.tv_usec = C.gopacket_time_usecs_t(ci.Timestamp.Nanosecond() / 1000)
 	hdr.caplen = C.bpf_u_int32(len(data)) // Trust actual length over ci.Length.
 	hdr.len = C.bpf_u_int32(ci.Length)
