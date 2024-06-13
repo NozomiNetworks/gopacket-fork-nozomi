@@ -113,11 +113,11 @@ int pcap_tstamp_type_name_to_val(const char* t) {
 #define gopacket_time_usecs_t __kernel_suseconds_t
 #elif __GLIBC__
 #if __GLIBC_MINOR__ > 35 // for Ubuntu 24.04 LTS and above
-	#if defined(__x86_64__) || defined(_M_X64)
+	#if defined(__x86_64__) || defined(_M_X64) // amd64
 		#define gopacket_time_secs_t __time_t
 		#define gopacket_time_usecs_t __suseconds_t
 	#else
-		#if defined(__aarch64__) || defined(_M_ARM64)
+		#if defined(__aarch64__) || defined(_M_ARM64) // ARM64
 			#define gopacket_time_secs_t __time_t
 			#define gopacket_time_usecs_t __suseconds_t
 		#else // ARM32
