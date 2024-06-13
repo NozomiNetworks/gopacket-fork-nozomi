@@ -116,9 +116,14 @@ int pcap_tstamp_type_name_to_val(const char* t) {
 	#if defined(__x86_64__) || defined(_M_X64)
 		#define gopacket_time_secs_t __time_t
 		#define gopacket_time_usecs_t __suseconds_t
-	#else // ARM32
-		#define gopacket_time_secs_t long long
-		#define gopacket_time_usecs_t long long
+	#else
+		#if defined(__aarch64__) || defined(_M_ARM64)
+			#define gopacket_time_secs_t __time_t
+			#define gopacket_time_usecs_t __suseconds_t
+		#else // ARM32
+			#define gopacket_time_secs_t long long
+			#define gopacket_time_usecs_t long long
+		#endif
 	#endif
 #else
 	#define gopacket_time_secs_t __time_t
