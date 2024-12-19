@@ -6,7 +6,7 @@ require (
 	github.com/NozomiNetworks/go-signature v0.0.0-20241218104023-d26aa119250e
 	github.com/vishvananda/netlink v1.1.0
 	github.com/vishvananda/netns v0.0.4
-	golang.org/x/net v0.32.0
+	golang.org/x/net v0.33.0
 	golang.org/x/sys v0.28.0
 )
 
